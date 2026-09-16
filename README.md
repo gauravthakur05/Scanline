@@ -1,4 +1,4 @@
-# Scanline — AI-Powered ATS Resume Analyzer
+# Scanline - AI-Powered ATS Resume Analyzer
 
 A full-stack web application that analyzes a resume against a target job role/description, produces a real,
 explainable ATS score (0–100), and gives prioritized, actionable feedback. No sign-up required.
