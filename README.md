@@ -3,6 +3,13 @@
 A full-stack web application that analyzes a resume against a target job role/description, produces a real,
 explainable ATS score (0–100), and gives prioritized, actionable feedback. No sign-up required.
 
+## 🚀 Live Demo
+
+**Try Scanline online:**
+👉 https://scanline-l9xm.vercel.app/
+
+---
+
 ## Overview
 
 Scanline uses a **hybrid scoring approach**:
@@ -20,22 +27,22 @@ An optional analysis history (last 8 analyses) is stored only in the browser's `
 
 ## Features
 
-- Upload (PDF / DOCX / TXT) or paste your resume
-- Target job role, job description (optional), experience level, and industry
-- 0–100 ATS score with category (Excellent / Strong / Good / Needs Improvement / Poor)
-- Six-category weighted score breakdown (ATS Compatibility, Keyword Match, Skills Match, Experience Relevance,
+* Upload (PDF / DOCX / TXT) or paste your resume
+* Target job role, job description (optional), experience level, and industry
+* 0–100 ATS score with category (Excellent / Strong / Good / Needs Improvement / Poor)
+* Six-category weighted score breakdown (ATS Compatibility, Keyword Match, Skills Match, Experience Relevance,
   Content Quality, Section Completeness)
-- Section-by-section scores (Summary, Skills, Experience, Projects, Education, Formatting)
-- Keyword match analysis (matched / missing / recommended, with copy-to-clipboard)
-- Job match analysis (skills / experience / keyword / project relevance percentages)
-- Detected resume issues (missing sections, weak phrasing, missing metrics, formatting problems, etc.)
-- Prioritized recommendations (high / medium / low) with problem, why, how-to-fix, and example
-- AI rewrite suggestions for weak bullet points, with copy button
-- "Improve My Score" simulator — estimate score impact of specific changes (clearly labeled as an estimate)
-- Resume strengths and a final verdict with top-3 fixes
-- Downloadable PDF report (generated client-side)
-- Analysis history in the browser (view, re-open, delete, clear)
-- Demo Mode fallback when no AI key is configured — the app is fully functional either way
+* Section-by-section scores (Summary, Skills, Experience, Projects, Education, Formatting)
+* Keyword match analysis (matched / missing / recommended, with copy-to-clipboard)
+* Job match analysis (skills / experience / keyword / project relevance percentages)
+* Detected resume issues (missing sections, weak phrasing, missing metrics, formatting problems, etc.)
+* Prioritized recommendations (high / medium / low) with problem, why, how-to-fix, and example
+* AI rewrite suggestions for weak bullet points, with copy button
+* "Improve My Score" simulator — estimate score impact of specific changes (clearly labeled as an estimate)
+* Resume strengths and a final verdict with top-3 fixes
+* Downloadable PDF report (generated client-side)
+* Analysis history in the browser (view, re-open, delete, clear)
+* Demo Mode fallback when no AI key is configured — the app is fully functional either way
 
 ## Tech Stack
 
@@ -45,7 +52,7 @@ express-rate-limit
 
 ## Architecture
 
-```
+```text
 ats-resume-analyzer/
 ├── backend/
 │   ├── server.js                  # Express app entrypoint
@@ -75,7 +82,7 @@ ats-resume-analyzer/
 
 Backend `.env` (copy from `backend/.env.example`):
 
-```
+```env
 PORT=5000
 FRONTEND_URL=http://localhost:5173
 
@@ -122,25 +129,22 @@ Open `http://localhost:5173` in your browser.
 
 ```bash
 cd frontend
-npm run build   # outputs static files to frontend/dist
-npm run preview # preview the production build locally
+npm run build
+npm run preview
 ```
-
-Serve `frontend/dist` with any static host, and run the backend with `npm start`. Update `FRONTEND_URL` in the
-backend `.env` to match your deployed frontend origin (for CORS).
 
 ## API Endpoints
 
-| Method | Endpoint              | Description                                                        |
-|--------|-----------------------|----------------------------------------------------------------------|
-| GET    | `/api/health`         | Health check + current AI mode (`live` or `demo`)                   |
-| POST   | `/api/resume/parse`   | Upload a PDF/DOCX/TXT file (`multipart/form-data`, field `resume`) and get back extracted text |
-| POST   | `/api/resume/analyze` | Full analysis: `{ resumeText, jobRole, jobDescription?, experienceLevel?, industry? }` |
-| POST   | `/api/resume/score`   | Deterministic score only (faster, no AI/demo qualitative layer)     |
-| POST   | `/api/resume/improve` | Simulate score impact: adds `selectedImprovements: string[]` to the analyze payload |
+| Method | Endpoint              | Description                                       |
+| ------ | --------------------- | ------------------------------------------------- |
+| GET    | `/api/health`         | Health check + current AI mode (`live` or `demo`) |
+| POST   | `/api/resume/parse`   | Upload a PDF/DOCX/TXT file and get extracted text |
+| POST   | `/api/resume/analyze` | Full resume analysis                              |
+| POST   | `/api/resume/score`   | Deterministic score only                          |
+| POST   | `/api/resume/improve` | Simulate score impact of selected improvements    |
 
 All endpoints return JSON. Errors return `{ "error": "human-readable message" }` with an appropriate HTTP status
-code (400 for validation, 422 for unparseable files, 429 for rate limiting, 500 for unexpected errors).
+code.
 
 ### Improvement keys for `/api/resume/improve`
 
@@ -149,35 +153,34 @@ code (400 for validation, 422 for unparseable files, 429 for rate limiting, 500 
 
 ## PDF / DOCX Parsing Notes
 
-- **PDF:** Extracted via `pdf-parse`. Scanned/image-only PDFs (no embedded text layer) cannot be parsed — the app
-  returns a friendly error suggesting the user paste their resume text instead.
-- **DOCX:** Extracted via `mammoth` (raw text extraction).
-- **TXT:** Read directly as UTF-8.
-- File uploads are limited to 5MB and validated by extension; content is never written to disk (in-memory buffer
-  only) and is discarded once the response is sent.
+* **PDF:** Extracted via `pdf-parse`. Scanned/image-only PDFs cannot be parsed because they have no embedded text layer.
+* **DOCX:** Extracted via `mammoth` (raw text extraction).
+* **TXT:** Read directly as UTF-8.
+* File uploads are limited to 5MB.
+* Uploaded files are processed in memory and discarded after the response.
 
 ## Security Considerations
 
-- `helmet` for standard HTTP security headers
-- `cors` restricted to the configured `FRONTEND_URL`
-- `express-rate-limit` on the general API and specifically on the analyze/score/improve endpoints
-- File type allowlist (pdf/docx/txt) and 5MB size limit enforced by Multer
-- Request body size limited to 1MB for JSON payloads
-- No resumes or personal data persisted server-side; no database
-- AI API key is only ever used server-side and is never exposed to the frontend
+* `helmet` for standard HTTP security headers
+* `cors` restricted to the configured `FRONTEND_URL`
+* `express-rate-limit` on API endpoints
+* File type allowlist (PDF/DOCX/TXT)
+* 5MB upload size limit
+* Request body size limited to 1MB
+* No resumes or personal data persisted server-side
+* AI API key remains server-side and is never exposed to the frontend
 
 ## Deployment Notes
 
-- Deploy the backend (e.g. Render, Railway, Fly.io, a VM) with `AI_API_KEY` and `FRONTEND_URL` set as environment
-  variables.
-- Deploy the frontend static build (e.g. Vercel, Netlify, Cloudflare Pages) and point it at your backend's public
-  URL — either via a reverse proxy/rewrite rule matching `vite.config.js`'s `/api` proxy, or by updating
-  `frontend/src/services/api.js`'s `API_BASE` to your backend's full URL.
-- Ensure `FRONTEND_URL` on the backend matches your deployed frontend's exact origin for CORS to work.
+* Deploy the backend with `AI_API_KEY` and `FRONTEND_URL` configured.
+* Deploy the frontend using a static hosting platform such as Vercel, Netlify, or Cloudflare Pages.
+* Configure the frontend API URL/rewrite to point to the deployed backend.
+* Ensure the backend CORS configuration matches the deployed frontend origin.
 
 ## Demo Mode
 
-If `AI_API_KEY` is missing or the Anthropic API call fails for any reason, the backend automatically falls back to
-a deterministic, template-based qualitative analysis built from the same real scoring facts (no fabricated AI
-output). The frontend always reflects this via a `mode: "demo"` field and a visible "Demo Analysis" badge on the
-results page and PDF report — it's never presented as if it were live AI output.
+If `AI_API_KEY` is missing or the Anthropic API call fails, the backend automatically falls back to a deterministic,
+template-based qualitative analysis built from the same real scoring facts.
+
+The frontend clearly displays a **Demo Analysis** badge whenever Demo Mode is active, so demo output is never
+presented as live AI-generated output.
