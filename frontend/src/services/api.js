@@ -1,4 +1,4 @@
-const API_BASE = "/api";
+const API_BASE = "https://scanline-hblc.vercel.app/api";
 
 class ApiError extends Error {
   constructor(message, status, fieldErrors) {
@@ -10,39 +10,60 @@ class ApiError extends Error {
 
 async function handleResponse(res) {
   let data;
+
   try {
     data = await res.json();
   } catch {
-    throw new ApiError("The server returned an unexpected response. Please try again.", res.status);
+    throw new ApiError(
+      "The server returned an unexpected response. Please try again.",
+      res.status
+    );
   }
+
   if (!res.ok) {
-    throw new ApiError(data.error || "Something went wrong. Please try again.", res.status, data.fieldErrors);
+    throw new ApiError(
+      data.error || "Something went wrong. Please try again.",
+      res.status,
+      data.fieldErrors
+    );
   }
+
   return data;
 }
 
 export async function parseResumeFile(file) {
   const formData = new FormData();
   formData.append("resume", file);
-  const res = await fetch(`${API_BASE}/resume/parse`, { method: "POST", body: formData });
+
+  const res = await fetch(`${API_BASE}/resume/parse`, {
+    method: "POST",
+    body: formData,
+  });
+
   return handleResponse(res);
 }
 
 export async function analyzeResume(payload) {
   const res = await fetch(`${API_BASE}/resume/analyze`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(payload),
   });
+
   return handleResponse(res);
 }
 
 export async function simulateImprovements(payload) {
   const res = await fetch(`${API_BASE}/resume/improve`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(payload),
   });
+
   return handleResponse(res);
 }
 
